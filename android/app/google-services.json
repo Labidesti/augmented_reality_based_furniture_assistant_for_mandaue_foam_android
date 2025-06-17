@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "136050125981",
+    "project_id": "sample-firebase-ai-app-70bf6",
+    "storage_bucket": "sample-firebase-ai-app-70bf6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136050125981:android:41385c453e715b59167874",
+        "android_client_info": {
+          "package_name": "com.example.augmented_reality_based_furniture_assistant_for_mandaue_foam_android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7yBzm8oXTIA_VcL3muOr7-pTxt8ay4bw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

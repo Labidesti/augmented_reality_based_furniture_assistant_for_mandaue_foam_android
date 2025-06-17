@@ -1,0 +1,5 @@
+package com.example.augmented_reality_based_furniture_assistant_for_mandaue_foam_android
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity()
