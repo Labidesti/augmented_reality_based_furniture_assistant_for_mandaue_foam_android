@@ -15,7 +15,6 @@ class AuthService {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        // The user canceled the sign-in
         return null;
       }
 
@@ -27,7 +26,6 @@ class AuthService {
 
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-      // Re-throw the error to be caught by the UI
       rethrow;
     }
   }

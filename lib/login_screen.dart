@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/logo.png', height: 100),
+                Image.asset('assets/Mandauefoam_Logo.png', height: 100),
                 const SizedBox(height: 24),
                 TextField(
                   controller: emailController,
@@ -100,9 +100,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text('Log In'),
                   ),
                   const SizedBox(height: 12),
+                  const Row(
+                    children: [
+                      Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text('or', style: TextStyle(color: Colors.grey)),
+                      ),
+                      Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   ElevatedButton.icon(
                     onPressed: _loginWithGoogle,
-                    icon: Image.asset('assets/Google_Favicon_2025.png', height: 24),
+                    icon: Image.asset('assets/Google_Logo_2025.png', height: 24),
                     label: const Text('Sign in with Google'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
