@@ -7,7 +7,6 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Get user stream
   Stream<User?> get user => _auth.authStateChanges();
 
   // Sign in with Google
@@ -44,6 +43,11 @@ class AuthService {
       email: email,
       password: password,
     );
+  }
+
+  // ADD THIS NEW METHOD
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
   }
 
   // Sign out

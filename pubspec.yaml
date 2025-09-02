@@ -1,5 +1,5 @@
 name: augmented_reality_based_furniture_assistant_for_mandaue_foam_android
-description: "A new Flutter project."
+description: "AR Mandaue Foam android."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -15,6 +15,7 @@ dependencies:
   google_sign_in: ^6.2.1
   cupertino_icons: ^1.0.8
   arcore_flutter_plugin: ^0.1.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

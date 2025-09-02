@@ -16,6 +16,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   void _showError(String message) {
     if (!mounted) return;
@@ -72,6 +74,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     const backgroundColor = Color(0xFFF8F9FF);
 
     return Scaffold(
+      // This prevents the screen from resizing when the keyboard appears
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Stack(
         children: [
@@ -87,22 +91,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
           ),
-          // Logo positioned precisely
-          Positioned(
-            top: 40, // Adjust this value to move the logo up or down
-            left: 32, // Adjust this value to move the logo left or right
-            child: Image.asset('assets/Mandauefoam_Logo.png', height: 104), // Adjusted height for better fit
-          ),
           SafeArea(
+            // This makes the whole screen scrollable
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // This SizedBox creates space at the top so the form doesn't overlap with the logo
-                    const SizedBox(height: 150), // Increased height to prevent overlap
+                    Image.asset(
+                      'assets/Mandauefoam_Logo.png',
+                      height: 180,
+                    ),
+                    const SizedBox(height: 30),
                     const Text(
                       'Create Account',
                       textAlign: TextAlign.center,
@@ -138,7 +139,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: passwordController,
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: 'Password',
                         filled: true,
@@ -148,12 +149,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: confirmPasswordController,
-                      obscureText: true,
+                      obscureText: !_isConfirmPasswordVisible,
                       decoration: InputDecoration(
                         hintText: 'Confirm Password',
                         filled: true,
@@ -163,6 +175,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -198,7 +221,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
                       const Row(
                         children: [
                           Expanded(child: Divider()),

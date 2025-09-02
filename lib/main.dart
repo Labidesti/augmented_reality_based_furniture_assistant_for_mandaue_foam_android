@@ -1,16 +1,16 @@
 // lib/main.dart
 
-import 'package:augmented_reality_based_furniture_assistant_for_mandaue_foam_android/auth_service.dart';
-import 'package:augmented_reality_based_furniture_assistant_for_mandaue_foam_android/home_screen.dart';
-import 'package:augmented_reality_based_furniture_assistant_for_mandaue_foam_android/login_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- ADD THIS LINE
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'auth_service.dart';
+import 'login_screen.dart';
+import 'admin_home_screen.dart'; // Import admin screen
+import 'customer_home_screen.dart'; // Import customer screen
 
 void main() async {
-  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
@@ -21,14 +21,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Firebase Auth',
-      // Hides the debug banner
+      title: 'AR Furniture Assistant',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      // Use the AuthWrapper to listen for auth state changes
       home: const AuthWrapper(),
     );
   }
@@ -37,29 +35,35 @@ class MyApp extends StatelessWidget {
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
+  // !!! IMPORTANT: Change this to your actual admin email address !!!
+  static const String adminEmail = 'admin@mandauefoam.com';
+
   @override
   Widget build(BuildContext context) {
     final authService = AuthService();
 
     return StreamBuilder<User?>(
-      // Listen to the user stream from our AuthService
       stream: authService.user,
       builder: (context, snapshot) {
-        // If the connection is still waiting, show a loading indicator
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // If the snapshot has data, it means the user is logged in
         if (snapshot.hasData) {
-          return const HomeScreen();
+          final user = snapshot.data;
+          // Check if the logged-in user is an admin
+          if (user != null && user.email == adminEmail) {
+            // If yes, show the Admin Home Screen
+            return const AdminHomeScreen();
+          } else {
+            // Otherwise, show the Customer Home Screen
+            return const CustomerHomeScreen();
+          }
         }
 
-        // Otherwise, the user is not logged in
+        // If no user is logged in, show the Login Screen
         return const LoginScreen();
       },
     );
