@@ -6,8 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'auth_service.dart';
 import 'login_screen.dart';
-import 'admin_home_screen.dart'; // Import admin screen
-import 'customer_home_screen.dart'; // Import customer screen
+import 'admin_home_screen.dart';
+import 'customer_home_screen.dart';
+import 'verify_email_screen.dart'; // <-- IMPORT THE NEW SCREEN
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +36,6 @@ class MyApp extends StatelessWidget {
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
-  // !!! IMPORTANT: Change this to your actual admin email address !!!
   static const String adminEmail = 'admin@mandauefoam.com';
 
   @override
@@ -53,13 +53,20 @@ class AuthWrapper extends StatelessWidget {
 
         if (snapshot.hasData) {
           final user = snapshot.data;
-          // Check if the logged-in user is an admin
-          if (user != null && user.email == adminEmail) {
-            // If yes, show the Admin Home Screen
-            return const AdminHomeScreen();
-          } else {
-            // Otherwise, show the Customer Home Screen
-            return const CustomerHomeScreen();
+
+          // NEW LOGIC: Check if the user's email is verified
+          if (user != null) {
+            if (user.emailVerified) {
+              // If verified, check if they are an admin or customer
+              if (user.email == adminEmail) {
+                return const AdminHomeScreen();
+              } else {
+                return const CustomerHomeScreen();
+              }
+            } else {
+              // If not verified, show the verification screen
+              return const VerifyEmailScreen();
+            }
           }
         }
 

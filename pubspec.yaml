@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.0 <4.0.0' # Corrected SDK constraint format
+  sdk: '>=3.2.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -16,6 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   arcore_flutter_plugin: ^0.1.0
   url_launcher: ^6.3.1
+  firebase_ai: 2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -25,8 +26,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # The indentation here is very important.
-  # It must have exactly two spaces.
   assets:
     - assets/
     - assets/models/

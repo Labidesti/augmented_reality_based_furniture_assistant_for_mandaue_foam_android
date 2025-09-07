@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
+import 'constants/app_constants.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -64,9 +65,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF1F41BB);
-    const secondaryColor = Color(0xFFF1F4FF);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Forgot Password'),
@@ -92,7 +90,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  hintText: 'via Email',
+                  hintText: 'Enter your email',
                   prefixIcon: const Icon(Icons.email_outlined, color: primaryColor),
                   filled: true,
                   fillColor: secondaryColor,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'auth_service.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
+import 'constants/app_constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -69,12 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF1F41BB);
-    const secondaryColor = Color(0xFFF1F4FF);
-    const backgroundColor = Color(0xFFF8F9FF);
-
     return Scaffold(
-      // This prevents the screen from resizing when the keyboard appears
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Stack(
@@ -92,36 +88,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           SafeArea(
-            // This makes the whole screen scrollable
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.asset(
-                      'assets/Mandauefoam_Logo.png',
-                      height: 180,
-                    ),
+                    Image.asset(mandaueFoamLogo, height: 180),
                     const SizedBox(height: 30),
-                    const Text(
-                      'Login here',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    const Text('Login here', textAlign: TextAlign.center, style: headingStyle),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Welcome back you\'ve been missed!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                      ),
-                    ),
+                    const Text('Welcome back you\'ve been missed!', textAlign: TextAlign.center, style: subheadingStyle),
                     const SizedBox(height: 30),
                     TextFormField(
                       controller: emailController,
@@ -152,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.grey,
+                            color: hintTextColor,
                           ),
                           onPressed: () {
                             setState(() {
@@ -172,10 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                           );
                         },
-                        child: const Text(
-                          'Forgot your password?',
-                          style: TextStyle(color: primaryColor),
-                        ),
+                        child: const Text('Forgot your password?', style: TextStyle(color: primaryColor)),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -193,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           elevation: 5,
                         ),
-                        child: const Text('Sign in', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        child: const Text('Sign in', style: buttonTextStyle),
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -220,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Expanded(child: Divider()),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Or continue with', style: TextStyle(color: Colors.grey)),
+                            child: Text('Or continue with', style: TextStyle(color: hintTextColor)),
                           ),
                           Expanded(child: Divider()),
                         ],
@@ -236,17 +210,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           padding: const EdgeInsets.all(4),
-                          child: Image.asset('assets/google_logo.png'),
+                          child: Image.asset(googleLogo),
                         ),
-                        label: const Expanded(
-                          child: Text(
-                            'Sign in with Google',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-                          ),
+                        label: const Text(
+                          'Sign in with Google',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4385F5),
+                          backgroundColor: googleButtonColor,
                           foregroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(55),
                           shape: RoundedRectangleBorder(

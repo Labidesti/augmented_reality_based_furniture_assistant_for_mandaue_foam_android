@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'auth_service.dart';
+import 'constants/app_constants.dart';
+import 'ai_assistant_screen.dart';
 
-// A simple data class for our furniture items
 class Furniture {
   final String name;
   final String thumbnail;
@@ -61,10 +62,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   Future<void> _launchCheckout() async {
-    // This check prevents an error if the user navigates away
     if (!mounted) return;
-
-    final Uri url = Uri.parse('https://mandauefoam.ph/'); // Mandaue Foam Website
+    final Uri url = Uri.parse('https://mandauefoam.ph/');
     if (!await launchUrl(url)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not launch website')),
@@ -87,7 +86,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("AR Furniture Assistant"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.smart_toy_outlined),
+            tooltip: 'AI Assistant',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AiAssistantScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: _logout,
@@ -103,10 +115,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              // Using a direct color with opacity is more modern
               color: Colors.black54,
-              height: 120,
+              height: 140,
               child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 scrollDirection: Axis.horizontal,
                 itemCount: furnitureItems.length,
                 itemBuilder: (context, index) {
@@ -115,14 +127,26 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   return GestureDetector(
                     onTap: () => setState(() => _selectedModelPath = item.modelPath),
                     child: Container(
+                      width: 100,
                       margin: const EdgeInsets.all(8),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: isSelected ? Border.all(color: Colors.blue, width: 3) : null,
+                        color: isSelected ? Colors.blue.shade100 : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: isSelected ? Border.all(color: Colors.blue, width: 2) : null,
                       ),
-                      child: Center(child: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold))),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(item.thumbnail, height: 60),
+                          const SizedBox(height: 8),
+                          Text(
+                            item.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -133,8 +157,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _launchCheckout,
-        label: const Text('Checkout on Website'),
+        label: const Text('Checkout'),
         icon: const Icon(Icons.shopping_cart),
+        backgroundColor: primaryColor,
       ),
     );
   }

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
 
-// A simple data model for your products
 class Product {
   final String name;
   int quantity;
@@ -20,7 +19,6 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
-  // Dummy data - later you will fetch this from Firebase
   final List<Product> _products = [
     Product(name: 'Modern Sofa', quantity: 15, category: 'Sofas'),
     Product(name: 'Oak Dining Table', quantity: 8, category: 'Tables'),
@@ -29,12 +27,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   void _logout() async {
     await AuthService().signOut();
-    // The AuthWrapper in main.dart will handle navigation
   }
 
   void _editProduct(Product product) {
-    // TODO: Implement the logic to edit a product.
-    // This could open a new screen or a dialog.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Editing ${product.name}')),
     );
@@ -70,9 +65,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement the logic to add a new product.
-        },
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
     );

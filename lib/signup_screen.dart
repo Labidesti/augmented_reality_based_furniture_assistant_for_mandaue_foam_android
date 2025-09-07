@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
+import 'constants/app_constants.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -15,9 +16,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordFocusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _passwordFocusNode.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   void _showError(String message) {
     if (!mounted) return;
@@ -25,8 +44,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  bool _isPasswordCompliant(String password) {
+    if (password.length < 8) return false;
+    if (!password.contains(RegExp(r'[A-Z]'))) return false;
+    if (!password.contains(RegExp(r'[0-9]'))) return false;
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return false;
+    return true;
   }
 
   Future<void> _signUpUser() async {
@@ -36,6 +64,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
     if (passwordController.text != confirmPasswordController.text) {
       _showError("Passwords do not match.");
+      return;
+    }
+    if (!_isPasswordCompliant(passwordController.text)) {
+      _showError('Password must be 8+ characters with an uppercase letter, a number, and a special character.');
       return;
     }
 
@@ -69,12 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF1F41BB);
-    const secondaryColor = Color(0xFFF1F4FF);
-    const backgroundColor = Color(0xFFF8F9FF);
-
     return Scaffold(
-      // This prevents the screen from resizing when the keyboard appears
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Stack(
@@ -92,36 +119,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
           SafeArea(
-            // This makes the whole screen scrollable
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.asset(
-                      'assets/Mandauefoam_Logo.png',
-                      height: 180,
-                    ),
+                    Image.asset(mandaueFoamLogo, height: 180),
                     const SizedBox(height: 30),
-                    const Text(
-                      'Create Account',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    const Text('Create Account', textAlign: TextAlign.center, style: headingStyle),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Create an account to get started!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                      ),
-                    ),
+                    const Text('Create an account to get started!', textAlign: TextAlign.center, style: subheadingStyle),
                     const SizedBox(height: 30),
                     TextFormField(
                       controller: emailController,
@@ -139,9 +147,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: passwordController,
+                      focusNode: _passwordFocusNode,
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: 'Password',
+                        helperText: _passwordFocusNode.hasFocus
+                            ? '8+ characters, 1 uppercase, 1 number, 1 special character'
+                            : null,
+                        helperMaxLines: 2,
+                        helperStyle: const TextStyle(color: Colors.grey),
                         filled: true,
                         fillColor: secondaryColor,
                         border: OutlineInputBorder(
@@ -152,7 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.grey,
+                            color: hintTextColor,
                           ),
                           onPressed: () {
                             setState(() {
@@ -178,7 +192,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.grey,
+                            color: hintTextColor,
                           ),
                           onPressed: () {
                             setState(() {
@@ -203,7 +217,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                           elevation: 5,
                         ),
-                        child: const Text('Sign up', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        child: const Text('Sign up', style: buttonTextStyle),
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -227,7 +241,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           Expanded(child: Divider()),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Or continue with', style: TextStyle(color: Colors.grey)),
+                            child: Text('Or continue with', style: TextStyle(color: hintTextColor)),
                           ),
                           Expanded(child: Divider()),
                         ],
@@ -243,17 +257,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           padding: const EdgeInsets.all(4),
-                          child: Image.asset('assets/google_logo.png'),
+                          child: Image.asset(googleLogo),
                         ),
-                        label: const Expanded(
-                          child: Text(
-                            'Sign up with Google',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-                          ),
+                        label: const Text(
+                          'Sign up with Google',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4385F5),
+                          backgroundColor: googleButtonColor,
                           foregroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(55),
                           shape: RoundedRectangleBorder(
