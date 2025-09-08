@@ -85,29 +85,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,  // ✅ allow scrolling when keyboard opens
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Positioned(
-            top: -100,
-            right: -150,
-            child: Container(
-              width: 635,
-              height: 635,
-              decoration: const BoxDecoration(
-                color: backgroundColor,
-                shape: BoxShape.circle,
-              ),
-            ),
+        Positioned(
+        top: -100,
+        right: -150,
+        child: Container(
+          width: 635,
+          height: 635,
+          decoration: const BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
           ),
-          SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+        ),
+      ),
+      SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 32.0,
+            right: 32.0,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+            // 👆 ensures extra space when keyboard is open
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
                     Image.asset(mandaueFoamLogo, height: 180),
                     const SizedBox(height: 30),
                     const Text('Create Account', textAlign: TextAlign.center, style: headingStyle),
@@ -230,20 +235,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ElevatedButton.icon(
                         onPressed: _loginWithGoogle,
                         icon: Container(
-                          width: 33,
-                          height: 33,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           padding: const EdgeInsets.all(4),
-                          child: Image.asset(googleLogo),
+                          child: Image.asset(googleLogo), // from app_constants.dart
                         ),
-                        // REMOVED Expanded from here to fix layout error
                         label: const Text(
                           'Sign up with Google',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: googleButtonColor,
@@ -260,7 +268,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
             ),
-          ),
+
         ],
       ),
     );

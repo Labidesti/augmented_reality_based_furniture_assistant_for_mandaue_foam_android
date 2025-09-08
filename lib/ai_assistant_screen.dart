@@ -1,8 +1,7 @@
+// lib/ai_assistant_screen.dart
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ai/firebase_ai.dart';
-import 'firebase_options.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   const AiAssistantScreen({super.key});
@@ -20,16 +19,19 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeModel();
-  }
-
-  void _initializeModel() {
     final ai = FirebaseAI.googleAI(auth: FirebaseAuth.instance);
     _model = ai.generativeModel(model: 'gemini-2.5-flash');
   }
 
+  @override
+  void dispose() {
+    _promptController.dispose();
+    super.dispose();
+  }
+
   Future<void> _sendPrompt() async {
-    if (_promptController.text.isEmpty) return;
+    final text = _promptController.text.trim();
+    if (text.isEmpty) return;
 
     setState(() {
       _isLoading = true;
@@ -37,20 +39,18 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     });
 
     try {
-      final prompt = [Content.text(_promptController.text)];
-      final result = await _model.generateContent(prompt);
-
+      final result = await _model.generateContent([Content.text(text)]);
       if (!mounted) return;
       setState(() {
         _response = result.text ?? 'No response from AI.';
-        _isLoading = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _response = 'Error: ${e.toString()}';
-        _isLoading = false;
+        _response = 'Error: $e';
       });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -59,7 +59,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('AI Furniture Assistant')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
@@ -69,7 +69,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 border: const OutlineInputBorder(),
                 suffixIcon: _isLoading
                     ? const Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(8),
                   child: CircularProgressIndicator(),
                 )
                     : IconButton(
@@ -82,10 +82,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
-                child: SelectableText(
-                  _response,
-                  style: const TextStyle(fontSize: 16),
-                ),
+                child: SelectableText(_response, style: const TextStyle(fontSize: 16)),
               ),
             ),
           ],

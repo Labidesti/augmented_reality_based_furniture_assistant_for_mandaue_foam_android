@@ -1,8 +1,7 @@
 // lib/customer_home_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'auth_service.dart';
 import 'constants/app_constants.dart';
 import 'ai_assistant_screen.dart';
@@ -11,7 +10,6 @@ class Furniture {
   final String name;
   final String thumbnail;
   final String modelPath;
-
   Furniture({required this.name, required this.thumbnail, required this.modelPath});
 }
 
@@ -23,7 +21,7 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
-  late ArCoreController arCoreController;
+  ArCoreController? _arCoreController;
   String? _selectedModelPath;
 
   final List<Furniture> furnitureItems = [
@@ -41,8 +39,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _onArCoreViewCreated(ArCoreController controller) {
-    arCoreController = controller;
-    arCoreController.onPlaneTap = _handleOnPlaneTap;
+    _arCoreController = controller;
+    _arCoreController!.onPlaneTap = _handleOnPlaneTap;
   }
 
   void _handleOnPlaneTap(List<ArCoreHitTestResult> hits) {
@@ -54,18 +52,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void _addModel(ArCoreHitTestResult hit) {
     final node = ArCoreReferenceNode(
       name: _selectedModelPath!.split('/').last,
-      object3DFileName: _selectedModelPath,
+      object3DFileName: _selectedModelPath!,
       position: hit.pose.translation,
       rotation: hit.pose.rotation,
     );
-    arCoreController.addArCoreNodeWithAnchor(node);
+    _arCoreController?.addArCoreNodeWithAnchor(node);
   }
 
   Future<void> _launchCheckout() async {
     if (!mounted) return;
     final Uri url = Uri.parse('https://mandauefoam.ph/');
-    if (!await launchUrl(url)) {
-      if (!mounted) return; // Added safety check
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not launch website')),
       );
@@ -78,7 +76,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   @override
   void dispose() {
-    arCoreController.dispose();
+    _arCoreController?.dispose();
     super.dispose();
   }
 

@@ -203,20 +203,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       ElevatedButton.icon(
                         onPressed: _loginWithGoogle,
                         icon: Container(
-                          width: 33,
-                          height: 33,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           padding: const EdgeInsets.all(4),
-                          child: Image.asset(googleLogo),
+                          child: Image.asset(googleLogo), // from app_constants.dart
                         ),
-                        // REMOVED Expanded from here to fix layout error
                         label: const Text(
                           'Sign in with Google',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: googleButtonColor,

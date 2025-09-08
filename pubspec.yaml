@@ -1,22 +1,25 @@
 name: augmented_reality_based_furniture_assistant_for_mandaue_foam_android
-description: "A new Flutter project."
-publish_to: 'none'
+description: A new Flutter project.
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: ">=3.2.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^3.15.2
-  firebase_auth: ^5.1.1
+  arcore_flutter_plugin:
+    path: plugins/arcore_flutter_plugin-0.1.0
+
+  url_launcher: ^6.2.6
+
+  # Firebase
+  firebase_core: ^4.1.0
+  firebase_auth: ^6.0.2
   google_sign_in: ^6.2.1
-  cupertino_icons: ^1.0.8
-  arcore_flutter_plugin: ^0.1.0
-  url_launcher: ^6.3.1
-  firebase_ai: ^2.3.0
+  firebase_ai: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -25,8 +28,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
-    - assets/
     - assets/models/
     - assets/thumbnails/
+    - assets/google_logo.png
+    - assets/Mandauefoam_Logo.png
