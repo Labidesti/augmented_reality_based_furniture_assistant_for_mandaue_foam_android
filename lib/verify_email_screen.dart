@@ -1,6 +1,6 @@
 // lib/verify_email_screen.dart
 
-import 'dart.async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'auth_service.dart';

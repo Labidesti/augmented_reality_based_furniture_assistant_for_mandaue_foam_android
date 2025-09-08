@@ -1,7 +1,8 @@
-// lib/ai_assistant_screen.dart
-
-import 'package.flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'firebase_options.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   const AiAssistantScreen({super.key});
@@ -14,16 +15,22 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   final TextEditingController _promptController = TextEditingController();
   String _response = '';
   bool _isLoading = false;
+  late GenerativeModel _model;
 
-  // CORRECTED: This is the new way to initialize the model
-  final model = FirebaseAI.instance.generativeModel(
-    model: 'gemini-1.5-flash-latest',
-  );
+  @override
+  void initState() {
+    super.initState();
+    _initializeModel();
+  }
+
+  void _initializeModel() {
+    final ai = FirebaseAI.googleAI(auth: FirebaseAuth.instance);
+    _model = ai.generativeModel(model: 'gemini-2.5-flash');
+  }
 
   Future<void> _sendPrompt() async {
-    if (_promptController.text.isEmpty) {
-      return;
-    }
+    if (_promptController.text.isEmpty) return;
+
     setState(() {
       _isLoading = true;
       _response = '';
@@ -31,7 +38,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
     try {
       final prompt = [Content.text(_promptController.text)];
-      final result = await model.generateContent(prompt);
+      final result = await _model.generateContent(prompt);
 
       if (!mounted) return;
       setState(() {
@@ -50,9 +57,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Furniture Assistant'),
-      ),
+      appBar: AppBar(title: const Text('AI Furniture Assistant')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
