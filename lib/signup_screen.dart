@@ -16,27 +16,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
-  final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _passwordFocusNode.addListener(() {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _passwordFocusNode.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
-  }
 
   void _showError(String message) {
     if (!mounted) return;
@@ -67,7 +49,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
     if (!_isPasswordCompliant(passwordController.text)) {
-      _showError('Password must be 8+ characters with an uppercase letter, a number, and a special character.');
+      _showError(
+          'Password must be 8+ characters with an uppercase letter, a number, and a special character.');
       return;
     }
 
@@ -147,13 +130,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: passwordController,
-                      focusNode: _passwordFocusNode,
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: 'Password',
-                        helperText: _passwordFocusNode.hasFocus
-                            ? '8+ characters, 1 uppercase, 1 number, 1 special character'
-                            : null,
+                        helperText: '8+ characters, 1 uppercase, 1 number, 1 special character',
                         helperMaxLines: 2,
                         helperStyle: const TextStyle(color: Colors.grey),
                         filled: true,
@@ -259,6 +239,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           padding: const EdgeInsets.all(4),
                           child: Image.asset(googleLogo),
                         ),
+                        // REMOVED Expanded from here to fix layout error
                         label: const Text(
                           'Sign up with Google',
                           textAlign: TextAlign.center,

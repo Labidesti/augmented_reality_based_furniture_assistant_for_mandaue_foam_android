@@ -1,6 +1,6 @@
 // lib/verify_email_screen.dart
 
-import 'dart:async';
+import 'dart.async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'auth_service.dart';
@@ -20,13 +20,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   @override
   void initState() {
     super.initState();
-    // Periodically check if the email has been verified
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       await FirebaseAuth.instance.currentUser?.reload();
       final user = FirebaseAuth.instance.currentUser;
       if (user?.emailVerified ?? false) {
         timer.cancel();
-        // The AuthWrapper in main.dart will handle navigation automatically
       }
     });
   }
@@ -40,6 +38,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   Future<void> _resendVerificationEmail() async {
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+
+      if (!mounted) return; // Added safety check
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Verification email sent!'),
@@ -47,6 +47,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted) return; // Added safety check
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to send email: ${e.toString()}'),

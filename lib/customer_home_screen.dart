@@ -65,6 +65,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     if (!mounted) return;
     final Uri url = Uri.parse('https://mandauefoam.ph/');
     if (!await launchUrl(url)) {
+      if (!mounted) return; // Added safety check
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not launch website')),
       );

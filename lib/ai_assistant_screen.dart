@@ -1,6 +1,6 @@
 // lib/ai_assistant_screen.dart
 
-import 'package:flutter/material.dart';
+import 'package.flutter/material.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 
 class AiAssistantScreen extends StatefulWidget {
@@ -15,9 +15,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   String _response = '';
   bool _isLoading = false;
 
-  final model = FirebaseAI.instance
-      .googleAI()
-      .generativeModel(model: 'gemini-2.5-flash');
+  // CORRECTED: This is the new way to initialize the model
+  final model = FirebaseAI.instance.generativeModel(
+    model: 'gemini-1.5-flash-latest',
+  );
 
   Future<void> _sendPrompt() async {
     if (_promptController.text.isEmpty) {
@@ -32,11 +33,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       final prompt = [Content.text(_promptController.text)];
       final result = await model.generateContent(prompt);
 
+      if (!mounted) return;
       setState(() {
         _response = result.text ?? 'No response from AI.';
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _response = 'Error: ${e.toString()}';
         _isLoading = false;
@@ -74,7 +77,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
-                child: Text(
+                child: SelectableText(
                   _response,
                   style: const TextStyle(fontSize: 16),
                 ),

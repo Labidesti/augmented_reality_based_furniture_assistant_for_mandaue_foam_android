@@ -212,6 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.all(4),
                           child: Image.asset(googleLogo),
                         ),
+                        // REMOVED Expanded from here to fix layout error
                         label: const Text(
                           'Sign in with Google',
                           textAlign: TextAlign.center,

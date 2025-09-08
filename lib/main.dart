@@ -3,12 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'auth_service.dart';
 import 'login_screen.dart';
 import 'admin_home_screen.dart';
 import 'customer_home_screen.dart';
-import 'verify_email_screen.dart'; // <-- IMPORT THE NEW SCREEN
+import 'verify_email_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,24 +52,19 @@ class AuthWrapper extends StatelessWidget {
 
         if (snapshot.hasData) {
           final user = snapshot.data;
-
-          // NEW LOGIC: Check if the user's email is verified
           if (user != null) {
             if (user.emailVerified) {
-              // If verified, check if they are an admin or customer
               if (user.email == adminEmail) {
                 return const AdminHomeScreen();
               } else {
                 return const CustomerHomeScreen();
               }
             } else {
-              // If not verified, show the verification screen
               return const VerifyEmailScreen();
             }
           }
         }
 
-        // If no user is logged in, show the Login Screen
         return const LoginScreen();
       },
     );
