@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'ar-for-mandaue-foam.firebasestorage.app',
     iosBundleId: 'com.example.augmentedRealityBasedFurnitureAssistantForMandaueFoamAndroid',
   );
+
 }

@@ -189,7 +189,7 @@ class ArCoreController {
     node.shape?.materials.addListener(() => _updateMaterials(node));
 
     if (node is ArCoreRotatingNode) {
-      node.degreesPerSecond.addListener(() => _handleRotationChanged(node));
+      _handleRotationChanged(node as ArCoreRotatingNode);
     }
   }
 

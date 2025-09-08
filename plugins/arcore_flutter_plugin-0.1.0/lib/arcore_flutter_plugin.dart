@@ -13,3 +13,13 @@ export 'package:arcore_flutter_plugin/src/arcore_plane.dart';
 export 'package:arcore_flutter_plugin/src/arcore_image.dart';
 export 'package:arcore_flutter_plugin/src/arcore_reference_node.dart';
 export 'package:arcore_flutter_plugin/src/arcore_augmented_image.dart';
+
+import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
+
+Future<void> checkARCore() async {
+  final isARCoreAvailable = await ArCoreController.checkArCoreAvailability();
+  if (!isARCoreAvailable) {
+    // Show a message or disable AR features
+    print("ARCore not available on this device.");
+  }
+}

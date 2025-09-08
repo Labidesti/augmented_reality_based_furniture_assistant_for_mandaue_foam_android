@@ -10,14 +10,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  arcore_flutter_plugin:
-    path: plugins/arcore_flutter_plugin-0.1.0
 
-  url_launcher: ^6.2.6
+  # AR / 3D
+  arcore_flutter_plugin: ^0.1.0
+  model_viewer_plus: ^1.7.0
+  url_launcher: ^6.3.0
 
   # Firebase
-  firebase_core: ^4.1.0
-  firebase_auth: ^6.0.2
+  firebase_core: ^4.1.0      # ⬅ bumped to match firebase_ai
+  firebase_auth: ^6.0.2      # ⬅ bumped to match firebase_ai
   google_sign_in: ^6.2.1
   firebase_ai: ^3.2.0
 

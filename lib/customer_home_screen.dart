@@ -2,14 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'auth_service.dart';
 import 'constants/app_constants.dart';
 import 'ai_assistant_screen.dart';
+import 'tutorial_no_ar_page.dart';
 
 class Furniture {
   final String name;
   final String thumbnail;
-  final String modelPath;
+  final String modelPath; // local .sfb or .glb/.gltf
   Furniture({required this.name, required this.thumbnail, required this.modelPath});
 }
 
@@ -23,11 +25,12 @@ class CustomerHomeScreen extends StatefulWidget {
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   ArCoreController? _arCoreController;
   String? _selectedModelPath;
+  bool _isArSupported = false;
 
   final List<Furniture> furnitureItems = [
-    Furniture(name: 'Chair', thumbnail: 'assets/thumbnails/chair.png', modelPath: 'assets/models/chair.sfb'),
-    Furniture(name: 'Sofa', thumbnail: 'assets/thumbnails/sofa.png', modelPath: 'assets/models/sofa.sfb'),
-    Furniture(name: 'Table', thumbnail: 'assets/thumbnails/table.png', modelPath: 'assets/models/table.sfb'),
+    Furniture(name: 'Chair', thumbnail: 'assets/thumbnails/chair.png', modelPath: 'assets/models/chair.glb'),
+    Furniture(name: 'Sofa', thumbnail: 'assets/thumbnails/sofa.png', modelPath: 'assets/models/sofa.glb'),
+    Furniture(name: 'Table', thumbnail: 'assets/thumbnails/table.png', modelPath: 'assets/models/table.glb'),
   ];
 
   @override
@@ -36,13 +39,40 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     if (furnitureItems.isNotEmpty) {
       _selectedModelPath = furnitureItems.first.modelPath;
     }
+
+    _checkArSupport();
   }
 
+  /// 🔹 Check if ARCore is available
+  Future<void> _checkArSupport() async {
+    final isSupported = await ArCoreController.checkArCoreAvailability();
+    final isInstalled = await ArCoreController.checkIsArCoreInstalled();
+
+    final supported = isSupported && isInstalled;
+
+    setState(() {
+      _isArSupported = supported;
+    });
+
+    // 🚨 Navigate only if unsupported
+    if (!supported && mounted) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NoArTutorialPage()),
+        );
+      });
+    }
+  }
+
+  /// ✅ FIXED: moved outside _checkArSupport
   void _onArCoreViewCreated(ArCoreController controller) {
     _arCoreController = controller;
     _arCoreController!.onPlaneTap = _handleOnPlaneTap;
   }
 
+  /// ✅ FIXED: moved outside _checkArSupport
   void _handleOnPlaneTap(List<ArCoreHitTestResult> hits) {
     if (_selectedModelPath == null) return;
     final hit = hits.first;
@@ -107,9 +137,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       ),
       body: Stack(
         children: [
-          ArCoreView(
+          _isArSupported
+              ? ArCoreView(
             onArCoreViewCreated: _onArCoreViewCreated,
             enableTapRecognizer: true,
+          )
+              : _selectedModelPath == null
+              ? const Center(child: Text("Select a furniture to preview"))
+              : ModelViewer(
+            src: _selectedModelPath!, // .glb or .gltf file
+            alt: "3D Furniture model",
+            autoRotate: true,
+            cameraControls: true,
           ),
           Align(
             alignment: Alignment.bottomCenter,
@@ -144,6 +183,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                             textAlign: TextAlign.center,
                           ),
+                          if (!_isArSupported)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 4.0),
+                              child: Text("3D only", style: TextStyle(fontSize: 10, color: Colors.red)),
+                            )
                         ],
                       ),
                     ),
