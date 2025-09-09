@@ -2,7 +2,7 @@ group 'com.difrancescogianmarco.arcore_flutter_plugin'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.8.22'   // ✅ Match your app
+    ext.kotlin_version = '1.8.22' // keep aligned with your project for now
     repositories {
         google()
         mavenCentral()
@@ -21,18 +21,14 @@ android {
 
     defaultConfig {
         minSdkVersion 24
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = '17'
     }
 }
 
@@ -42,8 +38,11 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    // ARCore
     implementation 'com.google.ar:core:1.39.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.core:core-ktx:1.12.0'
+    // ✅ Sceneform community fork (provides Scene, Node, ModelRenderable, etc.)
+    implementation 'com.gorisse.thomas.sceneform:sceneform:1.23.0'
+    implementation 'com.gorisse.thomas.sceneform:ux:1.23.0'
 }

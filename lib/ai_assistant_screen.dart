@@ -1,7 +1,9 @@
 // lib/ai_assistant_screen.dart
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ai/firebase_ai.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+
+/// Pull the key from --dart-define=GEMINI_API_KEY=your_key
+const _geminiKey = String.fromEnvironment('GEMINI_API_KEY');
 
 class AiAssistantScreen extends StatefulWidget {
   const AiAssistantScreen({super.key});
@@ -14,13 +16,16 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   final TextEditingController _promptController = TextEditingController();
   String _response = '';
   bool _isLoading = false;
-  late GenerativeModel _model;
+  late final GenerativeModel _model;
 
   @override
   void initState() {
     super.initState();
-    final ai = FirebaseAI.googleAI(auth: FirebaseAuth.instance);
-    _model = ai.generativeModel(model: 'gemini-2.5-flash');
+    const _geminiKey = String.fromEnvironment('AIzaSyCZDkTjIUl_qjrZqOSvXICk0fxexYUKQ00');
+    _model = GenerativeModel(
+      model: 'gemini-2.0-flash', // or 'gemini-1.5-flash'
+      apiKey: _geminiKey,
+    );
   }
 
   @override
@@ -46,9 +51,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _response = 'Error: $e';
-      });
+      setState(() => _response = 'Error: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -82,7 +85,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
-                child: SelectableText(_response, style: const TextStyle(fontSize: 16)),
+                child: SelectableText(
+                  _response,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],

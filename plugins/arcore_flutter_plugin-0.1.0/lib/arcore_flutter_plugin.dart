@@ -1,25 +1,15 @@
-export 'package:arcore_flutter_plugin/src/arcore_view.dart';
-export 'package:arcore_flutter_plugin/src/arcore_controller.dart';
-export 'package:arcore_flutter_plugin/src/arcore_face_view.dart';
-export 'package:arcore_flutter_plugin/src/arcore_face_controller.dart';
-export 'package:arcore_flutter_plugin/src/shape/arcore_sphere.dart';
-export 'package:arcore_flutter_plugin/src/shape/arcore_cylindre.dart';
-export 'package:arcore_flutter_plugin/src/shape/arcore_cube.dart';
-export 'package:arcore_flutter_plugin/src/arcore_node.dart';
-export 'package:arcore_flutter_plugin/src/arcore_material.dart';
-export 'package:arcore_flutter_plugin/src/arcore_hit_test_result.dart';
-export 'package:arcore_flutter_plugin/src/arcore_rotating_node.dart';
-export 'package:arcore_flutter_plugin/src/arcore_plane.dart';
-export 'package:arcore_flutter_plugin/src/arcore_image.dart';
-export 'package:arcore_flutter_plugin/src/arcore_reference_node.dart';
-export 'package:arcore_flutter_plugin/src/arcore_augmented_image.dart';
-
-import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
-
-Future<void> checkARCore() async {
-  final isARCoreAvailable = await ArCoreController.checkArCoreAvailability();
-  if (!isARCoreAvailable) {
-    // Show a message or disable AR features
-    print("ARCore not available on this device.");
-  }
-}
+export 'src/arcore_view.dart';
+export 'src/arcore_controller.dart';
+export 'src/arcore_face_view.dart';
+export 'src/arcore_face_controller.dart';
+export 'src/shape/arcore_sphere.dart';
+export 'src/shape/arcore_cylindre.dart';
+export 'src/shape/arcore_cube.dart';
+export 'src/arcore_node.dart';
+export 'src/arcore_material.dart';
+export 'src/arcore_hit_test_result.dart';
+export 'src/arcore_rotating_node.dart';
+export 'src/arcore_plane.dart';
+export 'src/arcore_image.dart';
+export 'src/arcore_reference_node.dart';
+export 'src/arcore_augmented_image.dart';

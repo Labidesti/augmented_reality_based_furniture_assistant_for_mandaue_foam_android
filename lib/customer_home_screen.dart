@@ -28,9 +28,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   bool _isArSupported = false;
 
   final List<Furniture> furnitureItems = [
-    Furniture(name: 'Chair', thumbnail: 'assets/thumbnails/chair.png', modelPath: 'assets/models/chair.glb'),
-    Furniture(name: 'Sofa', thumbnail: 'assets/thumbnails/sofa.png', modelPath: 'assets/models/sofa.glb'),
-    Furniture(name: 'Table', thumbnail: 'assets/thumbnails/table.png', modelPath: 'assets/models/table.glb'),
+    Furniture(name: 'Chair',
+        thumbnail: 'assets/thumbnails/chair.png',
+        modelPath: 'assets/models/chair.glb'),
+    Furniture(name: 'Sofa',
+        thumbnail: 'assets/thumbnails/sofa.png',
+        modelPath: 'assets/models/sofa.glb'),
+    Furniture(name: 'Table',
+        thumbnail: 'assets/thumbnails/table.png',
+        modelPath: 'assets/models/table.glb'),
   ];
 
   @override
@@ -90,15 +96,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   Future<void> _launchCheckout() async {
-    if (!mounted) return;
-    final Uri url = Uri.parse('https://mandauefoam.ph/');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      if (!mounted) return;
+    final uri = Uri.parse('https://example.com/checkout');
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch website')),
+        const SnackBar(content: Text('Could not open checkout')),
       );
     }
   }
+
+
+
 
   void _logout() async {
     await AuthService().signOut();
