@@ -1,20 +1,17 @@
-// android/build.gradle
+ // android/build.gradle
 buildscript {
-    // Define a stable Kotlin version
-    ext.kotlin_version = '1.8.22'
+    ext.kotlin_version = "1.8.22"
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // Android Gradle plugin
-        classpath "com.android.tools.build:gradle:8.6.0"
-        // Use the Kotlin version defined above
+        classpath "com.android.tools.build:gradle:8.3.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        // Google Services (Firebase) plugin
-        classpath "com.google.gms:google-services:4.3.15"
+        classpath "com.google.gms:google-services:4.4.2"
     }
 }
+
 
 allprojects {
     repositories {

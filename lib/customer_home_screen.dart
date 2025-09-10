@@ -1,8 +1,16 @@
 // lib/customer_home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:vector_math/vector_math_64.dart' as vm;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
+
 import 'auth_service.dart';
 import 'constants/app_constants.dart';
 import 'ai_assistant_screen.dart';
@@ -11,8 +19,13 @@ import 'tutorial_no_ar_page.dart';
 class Furniture {
   final String name;
   final String thumbnail;
-  final String modelPath; // local .sfb or .glb/.gltf
-  Furniture({required this.name, required this.thumbnail, required this.modelPath});
+  final String modelPath;
+
+  Furniture({
+    required this.name,
+    required this.thumbnail,
+    required this.modelPath,
+  });
 }
 
 class CustomerHomeScreen extends StatefulWidget {
@@ -23,20 +36,27 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
-  ArCoreController? _arCoreController;
+  ARSessionManager? _arSessionManager;
+  ARObjectManager? _arObjectManager;
   String? _selectedModelPath;
-  bool _isArSupported = false;
+  final bool _isArSupported = true; // ar_flutter_plugin doesn’t expose ARCore checks
 
   final List<Furniture> furnitureItems = [
-    Furniture(name: 'Chair',
-        thumbnail: 'assets/thumbnails/chair.png',
-        modelPath: 'assets/models/chair.glb'),
-    Furniture(name: 'Sofa',
-        thumbnail: 'assets/thumbnails/sofa.png',
-        modelPath: 'assets/models/sofa.glb'),
-    Furniture(name: 'Table',
-        thumbnail: 'assets/thumbnails/table.png',
-        modelPath: 'assets/models/table.glb'),
+    Furniture(
+      name: 'Chair',
+      thumbnail: 'assets/thumbnails/chair.png',
+      modelPath: 'assets/models/chair.glb',
+    ),
+    Furniture(
+      name: 'Sofa',
+      thumbnail: 'assets/thumbnails/sofa.png',
+      modelPath: 'assets/models/sofa.glb',
+    ),
+    Furniture(
+      name: 'Table',
+      thumbnail: 'assets/thumbnails/table.png',
+      modelPath: 'assets/models/table.glb',
+    ),
   ];
 
   @override
@@ -45,78 +65,53 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     if (furnitureItems.isNotEmpty) {
       _selectedModelPath = furnitureItems.first.modelPath;
     }
-
-    _checkArSupport();
   }
 
-  /// 🔹 Check if ARCore is available
-  Future<void> _checkArSupport() async {
-    final isSupported = await ArCoreController.checkArCoreAvailability();
-    final isInstalled = await ArCoreController.checkIsArCoreInstalled();
+  Future<void> _onARViewCreated(
+      ARSessionManager arSessionManager,
+      ARObjectManager arObjectManager,
+      ARAnchorManager arAnchorManager,
+      ARLocationManager arLocationManager,
+      ) async {
+    _arSessionManager = arSessionManager;
+    _arObjectManager = arObjectManager;
 
-    final supported = isSupported && isInstalled;
-
-    setState(() {
-      _isArSupported = supported;
-    });
-
-    // 🚨 Navigate only if unsupported
-    if (!supported && mounted) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const NoArTutorialPage()),
-        );
-      });
-    }
-  }
-
-  /// ✅ FIXED: moved outside _checkArSupport
-  void _onArCoreViewCreated(ArCoreController controller) {
-    _arCoreController = controller;
-    _arCoreController!.onPlaneTap = _handleOnPlaneTap;
-  }
-
-  /// ✅ FIXED: moved outside _checkArSupport
-  void _handleOnPlaneTap(List<ArCoreHitTestResult> hits) {
-    if (_selectedModelPath == null) return;
-    final hit = hits.first;
-    _addModel(hit);
-  }
-
-  void _addModel(ArCoreHitTestResult hit) {
-    final node = ArCoreReferenceNode(
-      name: _selectedModelPath!.split('/').last,
-      object3DFileName: _selectedModelPath!,
-      position: hit.pose.translation,
-      rotation: hit.pose.rotation,
+    // ✅ Correct initialization for new ar_flutter_plugin versions
+    await _arSessionManager!.onInitialize(
+      showFeaturePoints: false,
+      showPlanes: true,
+      showWorldOrigin: true,
     );
-    _arCoreController?.addArCoreNodeWithAnchor(node);
+
+    await _arObjectManager!.onInitialize();
+  }
+
+
+  Future<void> _addModel() async {
+    if (_selectedModelPath == null || _arObjectManager == null) return;
+
+    final node = ARNode(
+      type: NodeType.localGLTF2,
+      uri: _selectedModelPath!,
+      scale: vm.Vector3(0.5, 0.5, 0.5),
+      position: vm.Vector3(0.0, 0.0, -1.0),
+    );
+
+    await _arObjectManager!.addNode(node);
   }
 
   Future<void> _launchCheckout() async {
-    final uri = Uri.parse('https://example.com/checkout');
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-
-    if (!ok && mounted) {
+    final Uri url = Uri.parse('https://mandauefoam.ph/');
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open checkout')),
+        const SnackBar(content: Text('Could not launch website')),
       );
     }
   }
 
-
-
-
   void _logout() async {
     await AuthService().signOut();
-  }
-
-  @override
-  void dispose() {
-    _arCoreController?.dispose();
-    super.dispose();
   }
 
   @override
@@ -134,7 +129,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AiAssistantScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const AiAssistantScreen(),
+                ),
               );
             },
           ),
@@ -147,14 +144,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       body: Stack(
         children: [
           _isArSupported
-              ? ArCoreView(
-            onArCoreViewCreated: _onArCoreViewCreated,
-            enableTapRecognizer: true,
-          )
-              : _selectedModelPath == null
+              ? ARView(onARViewCreated: _onARViewCreated)
+              : (_selectedModelPath == null)
               ? const Center(child: Text("Select a furniture to preview"))
               : ModelViewer(
-            src: _selectedModelPath!, // .glb or .gltf file
+            src: _selectedModelPath!,
             alt: "3D Furniture model",
             autoRotate: true,
             cameraControls: true,
@@ -172,7 +166,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   final item = furnitureItems[index];
                   final isSelected = _selectedModelPath == item.modelPath;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedModelPath = item.modelPath),
+                    onTap: () {
+                      setState(() => _selectedModelPath = item.modelPath);
+                      _addModel();
+                    },
                     child: Container(
                       width: 100,
                       margin: const EdgeInsets.all(8),
@@ -180,7 +177,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.blue.shade100 : Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: isSelected ? Border.all(color: Colors.blue, width: 2) : null,
+                        border: isSelected
+                            ? Border.all(color: Colors.blue, width: 2)
+                            : null,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -189,13 +188,16 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                           const SizedBox(height: 8),
                           Text(
                             item.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
                             textAlign: TextAlign.center,
                           ),
                           if (!_isArSupported)
                             const Padding(
                               padding: EdgeInsets.only(top: 4.0),
-                              child: Text("3D only", style: TextStyle(fontSize: 10, color: Colors.red)),
+                              child: Text("3D only",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.red)),
                             )
                         ],
                       ),
