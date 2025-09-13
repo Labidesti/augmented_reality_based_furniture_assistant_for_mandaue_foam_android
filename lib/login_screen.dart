@@ -1,7 +1,6 @@
-// lib/login_screen.dart
-
-import 'package:augmented_reality_based_furniture_assistant_for_mandaue_foam_android/auth_service.dart';
-import 'package:augmented_reality_based_furniture_assistant_for_mandaue_foam_android/signup_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'constants/app_constants.dart';
+import 'auth_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,135 +11,54 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
-  Future<void> _loginWithEmail() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      _showError("Please enter both email and password.");
-      return;
-    }
+  Future<void> _login() async {
     setState(() => _isLoading = true);
+
     try {
-      await _authService.signInWithEmail(
-        emailController.text.trim(),
-        passwordController.text.trim(),
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-      // Navigation is now handled by AuthWrapper, so no need for Navigator.push
-    } catch (e) {
-      _showError("Failed to sign in: ${e.toString()}");
-    }
-    if (mounted) {
+
+      Navigator.pushReplacementNamed(context, '/customer');
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? "Login failed")),
+      );
+    } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _loginWithGoogle() async {
-    setState(() => _isLoading = true);
-    try {
-      await _authService.signInWithGoogle();
-      // Navigation handled by AuthWrapper
-    } catch (e) {
-      _showError("Failed to sign in with Google: ${e.toString()}");
-    }
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
-  }
 
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("Login")),
       body: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Updated to use the correct Mandaue Foam logo file name
-                Image.asset('assets/mandauefoam_Logo.png', height: 100),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 20),
-                if (_isLoading)
-                  const CircularProgressIndicator()
-                else ...[
-                  ElevatedButton(
-                    onPressed: _loginWithEmail,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    child: const Text('Log In'),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                const Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1, color: Colors.grey)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('or', style: TextStyle(color: Colors.grey)),
-                    ),
-                    Expanded(child: Divider(thickness: 1, color: Colors.grey)),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                if (_isLoading)
-                  const SizedBox()
-                else
-                  ElevatedButton.icon(
-                    onPressed: _loginWithGoogle,
-                    // Updated to use the correct Google logo file name
-                    icon: Image.asset('assets/Google_Logo_2025.png', height: 24),
-                    label: const Text('Sign in with Google'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      minimumSize: const Size.fromHeight(48),
-                      side: BorderSide(color: Colors.grey.shade300),
-                    ),
-                  ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                    );
-                  },
-                  child: const Text("Don’t have an account? Sign up"),
-                ),
-              ],
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(controller: _emailController, decoration: const InputDecoration(labelText: "Email")),
+            TextField(controller: _passwordController, decoration: const InputDecoration(labelText: "Password"), obscureText: true),
+            const SizedBox(height: 20),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(onPressed: _login, child: const Text("Login")),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/signup'),
+              child: const Text("Sign up"),
             ),
-          ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/verify'),
+              child: const Text("Forgot password?"),
+            ),
+          ],
         ),
       ),
     );

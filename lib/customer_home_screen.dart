@@ -1,20 +1,17 @@
-// lib/customer_home_screen.dart
-import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
-import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
-import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// ✅ Utilities
 import 'package:vector_math/vector_math_64.dart' as vm;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
+// ✅ Your app files
 import 'auth_service.dart';
 import 'constants/app_constants.dart';
 import 'ai_assistant_screen.dart';
-import 'tutorial_no_ar_page.dart';
 
 class Furniture {
   final String name;
@@ -36,26 +33,28 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
-  ARSessionManager? _arSessionManager;
-  ARObjectManager? _arObjectManager;
-  String? _selectedModelPath;
-  final bool _isArSupported = true; // ar_flutter_plugin doesn’t expose ARCore checks
+  ARSessionManager? arSessionManager;
+  ARObjectManager? arObjectManager;
+  String? selectedModelPath;
+  bool isArSupported = false;
+  bool checkedSupport = false;
+  bool dontShowDialog = false;
 
   final List<Furniture> furnitureItems = [
     Furniture(
       name: 'Chair',
-      thumbnail: 'assets/thumbnails/chair.png',
-      modelPath: 'assets/models/chair.glb',
+      thumbnail: 'assets/ar_models/thumbnails/chair.png',
+      modelPath: 'assets/ar_models/chair.glb',
     ),
     Furniture(
       name: 'Sofa',
-      thumbnail: 'assets/thumbnails/sofa.png',
-      modelPath: 'assets/models/sofa.glb',
+      thumbnail: 'assets/ar_models/thumbnails/sofa.png',
+      modelPath: 'assets/ar_models/sofa.glb',
     ),
     Furniture(
       name: 'Table',
-      thumbnail: 'assets/thumbnails/table.png',
-      modelPath: 'assets/models/table.glb',
+      thumbnail: 'assets/ar_models/thumbnails/table.png',
+      modelPath: 'assets/ar_models/table.glb',
     ),
   ];
 
@@ -63,158 +62,250 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void initState() {
     super.initState();
     if (furnitureItems.isNotEmpty) {
-      _selectedModelPath = furnitureItems.first.modelPath;
+      selectedModelPath = furnitureItems.first.modelPath;
     }
-  }
-
-  Future<void> _onARViewCreated(
-      ARSessionManager arSessionManager,
-      ARObjectManager arObjectManager,
-      ARAnchorManager arAnchorManager,
-      ARLocationManager arLocationManager,
-      ) async {
-    _arSessionManager = arSessionManager;
-    _arObjectManager = arObjectManager;
-
-    // ✅ Correct initialization for new ar_flutter_plugin versions
-    await _arSessionManager!.onInitialize(
-      showFeaturePoints: false,
-      showPlanes: true,
-      showWorldOrigin: true,
-    );
-
-    await _arObjectManager!.onInitialize();
-  }
-
-
-  Future<void> _addModel() async {
-    if (_selectedModelPath == null || _arObjectManager == null) return;
-
-    final node = ARNode(
-      type: NodeType.localGLTF2,
-      uri: _selectedModelPath!,
-      scale: vm.Vector3(0.5, 0.5, 0.5),
-      position: vm.Vector3(0.0, 0.0, -1.0),
-    );
-
-    await _arObjectManager!.addNode(node);
-  }
-
-  Future<void> _launchCheckout() async {
-    final Uri url = Uri.parse('https://mandauefoam.ph/');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch website')),
-      );
-    }
-  }
-
-  void _logout() async {
-    await AuthService().signOut();
+    _checkArSupport();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("AR Furniture Assistant"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.smart_toy_outlined),
-            tooltip: 'AI Assistant',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AiAssistantScreen(),
+  void dispose() {
+    arSessionManager?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkArSupport() async {
+    final prefs = await SharedPreferences.getInstance();
+    dontShowDialog = prefs.getBool("skipArWarning") ?? false;
+
+    bool supported = false;
+    if (Platform.isAndroid) {
+      supported = await ARFlutterPlugin.checkARCoreAvailability();
+    } else if (Platform.isIOS) {
+      supported = await ARFlutterPlugin.checkARKitAvailability();
+    }
+
+
+    setState(() {
+      isArSupported = supported;
+      checkedSupport = true;
+    });
+
+    if (!supported && mounted && !dontShowDialog) {
+      _showNoArDialog();
+    }
+  }
+
+  void _showNoArDialog() {
+    bool skipNextTime = false;
+
+    showDialog(
+      context: context,
+      builder: (context) =>
+          StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text("AR Not Supported"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Your device does not support ARCore/ARKit.\n"
+                          "You can still preview furniture in 3D mode.",
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: skipNextTime,
+                          onChanged: (val) {
+                            setState(() => skipNextTime = val ?? false);
+                          },
+                        ),
+                        const Expanded(child: Text("Don’t show again")),
+                      ],
+                    ),
+                  ],
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () async {
+                      if (skipNextTime) {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool("skipArWarning", true);
+                      }
+                      if (mounted) Navigator.of(context).pop();
+                    },
+                    child: const Text("OK"),
+                  ),
+                ],
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          _isArSupported
-              ? ARView(onARViewCreated: _onARViewCreated)
-              : (_selectedModelPath == null)
-              ? const Center(child: Text("Select a furniture to preview"))
-              : ModelViewer(
-            src: _selectedModelPath!,
-            alt: "3D Furniture model",
-            autoRotate: true,
-            cameraControls: true,
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              color: Colors.black54,
-              height: 140,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                scrollDirection: Axis.horizontal,
-                itemCount: furnitureItems.length,
-                itemBuilder: (context, index) {
-                  final item = furnitureItems[index];
-                  final isSelected = _selectedModelPath == item.modelPath;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _selectedModelPath = item.modelPath);
-                      _addModel();
-                    },
-                    child: Container(
-                      width: 100,
-                      margin: const EdgeInsets.all(8),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue.shade100 : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: isSelected
-                            ? Border.all(color: Colors.blue, width: 2)
-                            : null,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(item.thumbnail, height: 60),
-                          const SizedBox(height: 8),
-                          Text(
-                            item.name,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (!_isArSupported)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 4.0),
-                              child: Text("3D only",
+    );
+
+
+// ... (rest of CustomerHomeScreen remains unchanged: addModel, UI, etc.)
+
+
+    Future<void> onARViewCreated(ARSessionManager sessionManager,
+        ARObjectManager objectManager,
+        ARAnchorManager anchorManager,
+        ARLocationManager locationManager,) async {
+      arSessionManager = sessionManager;
+      arObjectManager = objectManager;
+
+      await arSessionManager!.onInitialize(
+        showFeaturePoints: false,
+        showPlanes: true,
+        showWorldOrigin: true,
+      );
+
+      await arObjectManager!.onInitialize();
+    }
+
+    Future<void> addModel() async {
+      if (selectedModelPath == null || arObjectManager == null) return;
+
+      await arObjectManager!.removeNodeWhere((node) => true);
+
+      final node = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedModelPath!,
+        scale: vm.Vector3(0.5, 0.5, 0.5),
+        position: vm.Vector3(0.0, 0.0, -1.0),
+      );
+
+      await arObjectManager!.addNode(node);
+    }
+
+    Future<void> launchCheckout() async {
+      final Uri url = Uri.parse('https://mandauefoam.ph/');
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch website')),
+        );
+      }
+    }
+
+    void logout() async {
+      await AuthService().signOut();
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      if (!checkedSupport) {
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("AR Furniture Assistant"),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 1,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.smart_toy_outlined),
+              tooltip: 'AI Assistant',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AiAssistantScreen(),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: logout,
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            isArSupported
+                ? ARView(onARViewCreated: onARViewCreated)
+                : (selectedModelPath == null)
+                ? const Center(child: Text("Select a furniture to preview"))
+                : ModelViewer(
+              src: selectedModelPath!,
+              alt: "3D Furniture model",
+              autoRotate: true,
+              cameraControls: true,
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                color: Colors.black54,
+                height: 140,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: furnitureItems.length,
+                  itemBuilder: (context, index) {
+                    final item = furnitureItems[index];
+                    final isSelected = selectedModelPath == item.modelPath;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => selectedModelPath = item.modelPath);
+                        if (isArSupported) addModel();
+                      },
+                      child: Container(
+                        width: 100,
+                        margin: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.blue.shade100 : Colors
+                              .white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: isSelected
+                              ? Border.all(color: Colors.blue, width: 2)
+                              : null,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(item.thumbnail, height: 60),
+                            const SizedBox(height: 8),
+                            Text(
+                              item.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (!isArSupported)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  "3D only",
                                   style: TextStyle(
-                                      fontSize: 10, color: Colors.red)),
-                            )
-                        ],
+                                    fontSize: 10,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              )
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _launchCheckout,
-        label: const Text('Checkout'),
-        icon: const Icon(Icons.shopping_cart),
-        backgroundColor: primaryColor,
-      ),
-    );
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: launchCheckout,
+          label: const Text('Checkout'),
+          icon: const Icon(Icons.shopping_cart),
+          backgroundColor: primaryColor,
+        ),
+      );
+    }
   }
 }

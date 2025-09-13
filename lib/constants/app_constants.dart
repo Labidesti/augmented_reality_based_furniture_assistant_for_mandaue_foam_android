@@ -1,5 +1,4 @@
 // lib/constants/app_constants.dart
-
 import 'package:flutter/material.dart';
 
 // App Colors
@@ -28,5 +27,16 @@ const TextStyle buttonTextStyle = TextStyle(
 );
 
 // Image Assets
-const String mandaueFoamLogo = 'assets/Mandauefoam_Logo.png';
+const String mandaueFoamLogo = 'assets/mandauefoam_Logo.png';
 const String googleLogo = 'assets/google_logo.png';
+
+// 🔐 Admin UID (the only account that can open the admin screen)
+const String kAdminUid = '0aiv98in2cYnWM08yMaJEDpekyw2';
+
+// lib/constants/app_assets.dart
+class AppAssets {
+  static const String googleLogo = 'assets/google_logo.png';
+  static const String mandauefoamLogo = 'assets/mandauefoam_Logo.png';
+
+// Add more assets here as needed
+}

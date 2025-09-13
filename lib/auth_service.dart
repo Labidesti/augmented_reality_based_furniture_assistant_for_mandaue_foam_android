@@ -1,90 +1,93 @@
-// lib/auth_service.dart
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
-  );
+  /// ✅ Stream of auth state (for listening in widgets if needed)
+  Stream<User?> get userChanges => _auth.userChanges();
 
-  // 🔹 Stream of auth state changes
-  Stream<User?> get userChanges => _auth.authStateChanges();
-
-  // 🔹 Current user
+  /// ✅ Current logged-in user
   User? get currentUser => _auth.currentUser;
 
-  /// Google Sign-In
-  Future<UserCredential?> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // user cancelled
-
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      return await _auth.signInWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      debugPrint("FirebaseAuth error [${e.code}]: ${e.message}");
-      return null;
-    } catch (e) {
-      debugPrint("Google sign-in error: $e");
-      return null;
-    }
-  }
-
-  /// Email + password sign up
-  Future<UserCredential?> signUpWithEmail(String email, String password) async {
-    try {
-      final userCred = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      await userCred.user?.sendEmailVerification();
-      return userCred;
-    } on FirebaseAuthException catch (e) {
-      debugPrint("Sign up error [${e.code}]: ${e.message}");
-      rethrow;
-    }
-  }
-
-  /// Email + password login
-  Future<UserCredential?> signInWithEmail(String email, String password) async {
-    try {
-      return await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      debugPrint("Sign in error [${e.code}]: ${e.message}");
-      rethrow;
-    }
-  }
-
-  /// Password reset
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
-      debugPrint("Password reset error [${e.code}]: ${e.message}");
-      rethrow;
+      throw Exception(e.message ?? "Failed to send reset email.");
+    }
+  }
+  /// ✅ Email & Password Login
+  Future<User?> signInWithEmail(String email, String password) async {
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapAuthError(e));
+    }
+
+  }
+
+  /// ✅ Email & Password Signup
+  Future<User?> signUpWithEmail(String email, String password) async {
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      await credential.user?.sendEmailVerification();
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapAuthError(e));
     }
   }
 
-  /// Logout
+  /// ✅ Google Sign-in
+  Future<User?> signInWithGoogle() async {
+    try {
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null;
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      final result = await _auth.signInWithCredential(credential);
+      return result.user;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapAuthError(e));
+    }
+  }
+
+  /// ✅ Logout (Email or Google)
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut(); // only if Google login
-    } catch (_) {
-      // ignore if not Google login
-    }
+      await _googleSignIn.signOut();
+    } catch (_) {}
     await _auth.signOut();
+  }
+
+  /// ✅ Map Firebase errors to readable text
+  String _mapAuthError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return "No user found with this email.";
+      case 'wrong-password':
+        return "Incorrect password.";
+      case 'email-already-in-use':
+        return "Email already registered.";
+      case 'invalid-email':
+        return "Invalid email format.";
+      case 'weak-password':
+        return "Password is too weak.";
+      default:
+        return e.message ?? "Authentication error.";
+    }
   }
 }

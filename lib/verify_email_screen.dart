@@ -1,10 +1,6 @@
-// lib/verify_email_screen.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_service.dart';
-import 'constants/app_constants.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key});
@@ -14,95 +10,98 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  Timer? _timer;
-  final AuthService _authService = AuthService();
+  bool isEmailVerified = false;
+  bool canResendEmail = false;
+  Timer? timer;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      await FirebaseAuth.instance.currentUser?.reload();
-      final user = FirebaseAuth.instance.currentUser;
-      if (user?.emailVerified ?? false) {
-        timer.cancel();
-      }
-    });
+    isEmailVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+
+    if (!isEmailVerified) {
+      sendVerificationEmail();
+
+      // Poll every 3s to check verification
+      timer = Timer.periodic(const Duration(seconds: 3), (_) => checkEmailVerified());
+    }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
-  Future<void> _resendVerificationEmail() async {
+  Future<void> sendVerificationEmail() async {
     try {
-      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
 
-      if (!mounted) return; // Added safety check
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification email sent!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      setState(() => canResendEmail = false);
+      await Future.delayed(const Duration(seconds: 5));
+      setState(() => canResendEmail = true);
     } catch (e) {
-      if (!mounted) return; // Added safety check
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to send email: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Failed to send email: $e")),
       );
+    }
+  }
+
+  Future<void> checkEmailVerified() async {
+    await FirebaseAuth.instance.currentUser?.reload();
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && user.emailVerified) {
+      setState(() => isEmailVerified = true);
+      timer?.cancel();
+
+      // Redirect based on role (basic: admin vs customer)
+      if (!mounted) return;
+      if (user.email?.endsWith("@mandauefoam.ph") ?? false) {
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/customer');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userEmail = FirebaseAuth.instance.currentUser?.email ?? 'your email';
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Verify Your Email'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _authService.signOut(),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Icon(Icons.email_outlined, size: 100, color: primaryColor),
-              const SizedBox(height: 30),
-              Text(
-                'A verification link has been sent to:\n$userEmail',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Please click the link in the email to continue. This screen will update automatically.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: _resendVerificationEmail,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: secondaryColor,
-                  foregroundColor: primaryColor,
-                ),
-                child: const Text('Resend Email'),
-              ),
-            ],
-          ),
+    return isEmailVerified
+        ? const Center(child: CircularProgressIndicator()) // while redirecting
+        : Scaffold(
+      appBar: AppBar(title: const Text("Verify Email")),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.email, size: 80, color: Colors.blue),
+            const SizedBox(height: 20),
+            const Text(
+              "A verification email has been sent to your inbox.\n"
+                  "Please confirm your email address to continue.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: canResendEmail ? sendVerificationEmail : null,
+              child: const Text("Resend Email"),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                if (!mounted) return;
+                Navigator.pushReplacementNamed(context, '/');
+              },
+              child: const Text("Cancel / Back to Login"),
+            ),
+          ],
         ),
       ),
     );
