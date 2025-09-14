@@ -32,3 +32,9 @@ analyzer:
     unnecessary_this: ignore
     unnecessary_import: ignore
     use_key_in_widget_constructors: ignore
+
+  exclude:
+    - plugins/ar_flutter_plugin-0.7.3/example/**
+    - plugins/ar_flutter_plugin-0.7.3/test/**
+    - plugins/ar_flutter_plugin-0.7.3/lib/examples/**
+

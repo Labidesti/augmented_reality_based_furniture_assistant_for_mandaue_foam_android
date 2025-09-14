@@ -1,25 +1,24 @@
  // android/build.gradle
  buildscript {
-     ext.kotlin_version = '1.8.22'
+     ext.kotlin_version = '1.9.25'  // ✅ force modern Kotlin globally
      repositories {
          google()
          mavenCentral()
      }
      dependencies {
-         classpath "com.android.tools.build:gradle:7.4.2"
+         classpath "com.android.tools.build:gradle:8.6.0"
          classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+         classpath "com.google.gms:google-services:4.4.2"
      }
  }
 
+ allprojects {
+     repositories {
+         google()
+         mavenCentral()
+     }
+ }
 
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-    }
-}
 
 
 rootProject.buildDir = "../build"
@@ -31,3 +30,11 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+ subprojects {
+     afterEvaluate { project ->
+         if (project.hasProperty("kotlin_version")) {
+             project.ext.kotlin_version = "1.9.25"
+         }
+     }
+ }
