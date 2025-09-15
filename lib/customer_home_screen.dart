@@ -22,6 +22,7 @@ import 'constants/app_constants.dart';
 import 'ai_assistant_screen.dart';
 
 
+
 class Furniture {
   final String name;
   final String thumbnail;
@@ -86,13 +87,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     dontShowDialog = prefs.getBool("skipArWarning") ?? false;
 
-    bool supported = false;
-    if (Platform.isAndroid) {
-      supported = await ARSessionManager.checkARCoreAvailability();
-    } else if (Platform.isIOS) {
-      supported = await ARSessionManager.checkARKitAvailability();
-    }
-
+    bool supported = Platform.isAndroid || Platform.isIOS;
 
     if (!mounted) return;
     setState(() {
@@ -104,6 +99,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       _showNoArDialog();
     }
   }
+
+
 
 
   void _showNoArDialog() {
@@ -191,9 +188,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     );
 
     final didAdd = await arObjectManager!.addNode(node);
-    if (didAdd) {
+    if (didAdd == true) {
       addedNodes.add(node);
     }
+
   }
 
 
