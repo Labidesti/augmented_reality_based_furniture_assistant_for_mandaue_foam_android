@@ -1,8 +1,12 @@
 plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+}
+
+plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services"
+    id "com.google.gms.google-services" // if using Firebase
 }
 
 android {
@@ -27,46 +31,17 @@ android {
     }
 
     buildTypes {
-        debug {
-            debuggable true
-            shrinkResources false
-            minifyEnabled false
-            signingConfig signingConfigs.debug
-        }
         release {
             shrinkResources false
             minifyEnabled false
             signingConfig signingConfigs.debug
         }
     }
-
-    // ✅ Force APK output instead of .aab for Flutter run
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            if (variant.buildType.name == "debug") {
-                outputFileName = "app-debug.apk"
-            }
-        }
-    }
 }
 
-flutter {
-    source = "../.."
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.2.0')
+    implementation 'com.google.firebase:firebase-analytics'
 }
 
-afterEvaluate {
-    tasks.named("assembleDebug").configure {
-        doLast {
-            def src = file("$buildDir/outputs/apk/debug/app-debug.apk")
-            def destDir = file("$rootDir/../build/app/outputs/flutter-apk")
-            destDir.mkdirs()
-            copy {
-                from src
-                into destDir
-                rename { "app-debug.apk" }
-            }
-            println("✅ Copied APK to Flutter expected path: ${destDir}")
-        }
-    }
-}
-
+apply plugin: 'com.google.gms.google-services'

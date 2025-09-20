@@ -1,0 +1,48 @@
+{
+  "Home Furniture": {
+    "Bedroom": [
+      "Bed Frames",
+      "Beds with Storage",
+      "Folding Beds & Pullout Beds",
+      "Bunk + Loft + Double Deck Beds",
+      "Daybeds",
+      "Sofa Beds",
+      "Nightstands",
+      "Dressers",
+      "Chest of Drawers",
+      "Wardrobes",
+      "Garment Racks"
+    ],
+    "Living Room": [
+      "Coffee & Accent Tables",
+      "Bookcases & Shelvings",
+      "Wall Shelves + Brackets",
+      "TV Racks",
+      "Sofas",
+      "Benches & Ottomans",
+      "Accent + Armchairs",
+      "Sofa Protectors"
+    ],
+    "Entryways": [
+      "Coat Rack",
+      "Shoe Racks & Cabinets",
+      "Wall Hooks",
+      "Shoe Benches"
+    ]
+  },
+  "Mattress & Pillows": {
+    "Mattresses": [
+      "Foam Mattresses",
+      "Spring Mattresses",
+      "Toppers",
+      "Folded & Rolled Mattresses"
+    ],
+    "Bed Pillows": [
+      "Foam Pillows",
+      "Fiber Pillows",
+      "Bolster Pillows",
+      "Mom & Baby",
+      "Specialty Pillows"
+    ]
+  }
+}

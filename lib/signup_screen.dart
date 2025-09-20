@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'auth_service.dart';
 
 
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
