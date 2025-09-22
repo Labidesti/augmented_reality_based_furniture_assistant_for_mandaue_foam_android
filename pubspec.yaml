@@ -9,6 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+    shared_preferences: ^2.2.2
   # ✅ Firebase
   firebase_core: ^2.24.2
   firebase_auth: ^4.16.0
@@ -47,8 +48,12 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/models/Bradmor-4-Seater-Dining-Set.glb
+    - assets/models/Coral-Desk1.glb
+    - assets/models/Sofa-Random-Example.glb
     - assets/categories.json
     - assets/ar_models/
     - assets/furniture/
     - assets/google_logo.png
     - assets/mandauefoam_logo.png
+    - assets/models/

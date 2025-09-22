@@ -1,66 +1,78 @@
-import 'package:ar_flutter_plugin/datatypes/node_types.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
-import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 
-class ARViewScreen extends StatefulWidget {
-  final String modelPath; // gets passed from ProductDetailScreen
-
-  const ARViewScreen({super.key, required this.modelPath});
+class ArViewScreen extends StatefulWidget {
+  const ArViewScreen({super.key});
 
   @override
-  State<ARViewScreen> createState() => _ARViewScreenState();
+  State<ArViewScreen> createState() => _ArViewScreenState();
 }
 
-class _ARViewScreenState extends State<ARViewScreen> {
-  ARSessionManager? arSessionManager;
-  ARObjectManager? arObjectManager;
-
-  @override
-  void dispose() {
-    arSessionManager?.dispose();
-    super.dispose();
-  }
+class _ArViewScreenState extends State<ArViewScreen> {
+  late ARSessionManager arSessionManager;
+  late ARObjectManager arObjectManager;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("AR Preview"),
-        backgroundColor: Colors.black,
-      ),
+      appBar: AppBar(title: const Text("AR Furniture Viewer")),
       body: ARView(
-        onARViewCreated: (arSessionManager, arObjectManager, arAnchorManager, arLocationManager) {
-          this.arSessionManager = arSessionManager;
-          this.arObjectManager = arObjectManager;
-
-          arSessionManager.onInitialize(
-            showFeaturePoints: false,
-            showPlanes: true,
-            customPlaneTexturePath: "assets/triangle.png",
-            showWorldOrigin: true,
-          );
-          arObjectManager.onInitialize();
-
-          _addModel();
-        },
+        onARViewCreated: onARViewCreated,
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: "sofa",
+            onPressed: () => _addObject("assets/models/Sofa-Random-Example.glb"),
+            child: const Icon(Icons.weekend), // Sofa icon
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: "desk",
+            onPressed: () => _addObject("assets/models/Coral-Desk1.glb"),
+            child: const Icon(Icons.table_bar), // Desk icon
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: "dining",
+            onPressed: () => _addObject("assets/models/Bradmor-4-Seater-Dining-Set.glb"),
+            child: const Icon(Icons.chair_alt), // Dining set icon
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> _addModel() async {
-    final node = ARNode(
-      type: NodeType.localGLTF2,
-      uri: widget.modelPath, // e.g. assets/ar_models/sofa1.glb
-      scale: vector.Vector3(0.5, 0.5, 0.5),
-      position: vector.Vector3(0.0, 0.0, -1.0),
-      rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
+  /// Setup AR session + object manager
+  void onARViewCreated(
+      ARSessionManager sessionManager,
+      ARObjectManager objectManager,
+      ARAnchorManager anchorManager,
+      ARLocationManager locationManager,
+      ) {
+    arSessionManager = sessionManager;
+    arObjectManager = objectManager;
+
+    arSessionManager.onInitialize(
+      showFeaturePoints: false,
+      showPlanes: true,
+      customPlaneTexturePath: "triangle.png",
+      showWorldOrigin: true,
     );
 
-    bool? didAdd = await arObjectManager?.addNode(node);
-    debugPrint("AR model added: $didAdd");
+    arObjectManager.onInitialize();
+  }
+
+  /// Add a local GLB object
+  Future<void> _addObject(String path) async {
+    final newNode = ARNode(
+      type: NodeType.localGLTF2,
+      uri: path,
+      scale: vector.Vector3(0.5, 0.5, 0.5), // adjust size
+      position: vector.Vector3(0.0, 0.0, -1.0), // 1m in front of camera
+    );
+    await arObjectManager.addNode(newNode);
   }
 }
