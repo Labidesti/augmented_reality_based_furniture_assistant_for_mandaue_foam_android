@@ -13,6 +13,8 @@ import 'screens/admin_home_screen.dart';
 import 'screens/customer_home_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/ar_view_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,11 +43,11 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const AuthWrapper(),
         '/tutorial': (context) => const TutorialScreen(),
+        '/customer': (context) => const CustomerHomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/verify': (context) => const VerifyEmailScreen(),
         '/admin': (context) => const AdminHomeScreen(),
-        '/customer': (context) => const CustomerHomeScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/ar': (context) => const ArViewScreen(), // ✅ AR route added
       },
