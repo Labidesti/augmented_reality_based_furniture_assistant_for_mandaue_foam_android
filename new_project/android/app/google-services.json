@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "699619255037",
+    "project_id": "ar-for-mandaue-foam",
+    "storage_bucket": "ar-for-mandaue-foam.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699619255037:android:aefb9cce3dd8aec36d9494",
+        "android_client_info": {
+          "package_name": "com.example.augmented_reality_based_furniture_assistant_for_mandaue_foam_android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ1rvGRJA2bY-d7CbwF27-xuPhi_jx5EU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

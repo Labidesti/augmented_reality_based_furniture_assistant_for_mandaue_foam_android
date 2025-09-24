@@ -1,47 +1,60 @@
-plugins {
-    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-}
+// android/app/build.gradle
 
 plugins {
     id "com.android.application"
-    id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services" // if using Firebase
+    id "org.jetbrains.kotlin.android"
+    id "com.google.gms.google-services" // ✅ Only if you are using Firebase
 }
 
 android {
-    namespace "com.example.augmented_reality_based_furniture_assistant_for_mandaue_foam_android"
-    compileSdkVersion 34
+    namespace "com.example.new_project"   // ⚠️ Replace with your actual package name
+    compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.augmented_reality_based_furniture_assistant_for_mandaue_foam_android"
-        minSdkVersion 24
-        targetSdkVersion 34
+        applicationId "com.example.new_project"  // ⚠️ Replace with your app's package name
+        minSdk 24   // ARCore requires 24+
+        targetSdk 34
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
-    }
-
-    buildTypes {
-        release {
-            shrinkResources false
-            minifyEnabled false
-            signingConfig signingConfigs.debug
-        }
     }
 }
 
 dependencies {
-    implementation platform('com.google.firebase:firebase-bom:32.2.0')
-    implementation 'com.google.firebase:firebase-analytics'
-}
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.22"
 
-apply plugin: 'com.google.gms.google-services'
+    // AndroidX
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.9.0"
+
+    // ✅ Firebase (only include the ones you actually use)
+    implementation platform("com.google.firebase:firebase-bom:32.7.2")
+    implementation "com.google.firebase:firebase-analytics"
+    implementation "com.google.firebase:firebase-auth"
+    implementation "com.google.firebase:firebase-firestore"
+    implementation "com.google.firebase:firebase-storage"
+
+    // ✅ Google Play Services (needed for AR + sign-in)
+    implementation "com.google.android.gms:play-services-auth:20.7.0"
+    implementation "com.google.ar:core:1.41.0"
+}

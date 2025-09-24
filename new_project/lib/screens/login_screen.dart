@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,25 +11,19 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _loading = false;
+  final _authService = AuthService();
 
   Future<void> _login() async {
-    setState(() => _loading = true);
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      await _authService.signIn(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
-
-      // ✅ If logged in, go to verify email screen
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/verify-email');
-    } on FirebaseAuthException catch (e) {
+      // AuthGate in main.dart will handle navigation automatically
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: ${e.message}")),
+        SnackBar(content: Text(e.toString())),
       );
-    } finally {
-      setState(() => _loading = false);
     }
   }
 
@@ -38,9 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Login")),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _emailController,
@@ -48,23 +41,19 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextField(
               controller: _passwordController,
-              obscureText: true,
               decoration: const InputDecoration(labelText: "Password"),
+              obscureText: true,
             ),
             const SizedBox(height: 20),
-            _loading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
+            ElevatedButton(
               onPressed: _login,
               child: const Text("Login"),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/signup'),
-              child: const Text("Create an Account"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/forgot-password'),
-              child: const Text("Forgot Password?"),
+              onPressed: () {
+                Navigator.pushNamed(context, '/signup');
+              },
+              child: const Text("Don’t have an account? Sign up"),
             ),
           ],
         ),

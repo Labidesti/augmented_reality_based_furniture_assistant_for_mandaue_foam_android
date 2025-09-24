@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -11,39 +11,24 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _authService = AuthService();
+  bool _loading = false;
 
-  bool _isLoading = false;
-
-  Future<void> _signUp() async {
-    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
+  Future<void> _signup() async {
+    setState(() => _loading = true);
     try {
-      final user = await _authService.signUp(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      if (user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Verification email sent. Please check your inbox.")),
-        );
-        Navigator.pushReplacementNamed(context, '/verifyEmail');
-      }
-    } catch (e) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/verify-email');
+    } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Signup failed: ${e.message}")),
       );
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _loading = false);
     }
   }
 
@@ -52,7 +37,7 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Sign Up")),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -60,30 +45,17 @@ class _SignupScreenState extends State<SignupScreen> {
               controller: _emailController,
               decoration: const InputDecoration(labelText: "Email"),
             ),
-            const SizedBox(height: 12),
             TextField(
               controller: _passwordController,
+              obscureText: true,
               decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: "Confirm Password"),
-              obscureText: true,
             ),
             const SizedBox(height: 20),
-            _isLoading
+            _loading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-              onPressed: _signUp,
-              child: const Text("Create Account"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: const Text("Already have an account? Login"),
+              onPressed: _signup,
+              child: const Text("Sign Up"),
             ),
           ],
         ),

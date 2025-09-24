@@ -46,6 +46,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+
   assets:
     # ✅ 3D Models
     - assets/models/Bradmor-4-Seater-Dining-Set.glb
